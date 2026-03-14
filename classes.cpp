@@ -1,45 +1,3 @@
-/*
-ARCHITECTURE NOTE
-
-This program models a simple banking system using Object-Oriented Programming concepts.
-
-Base Class:
-BankAccount
-- Contains common properties of any bank account:
-  accountNumber
-  accountHolderName
-  balance
-- Provides common operations:
-  deposit()
-  withdraw()
-  displayBalance()
-  showAccountDetails()
-
-Derived Classes:
-SavingsAccount
-- Inherits from BankAccount
-- Adds interestRate
-- Represents a savings-type account that can earn interest.
-
-CurrentAccount
-- Inherits from BankAccount
-- Adds overdraftLimit
-- Represents a current account that allows overdraft (balance can go negative up to a limit).
-
-Design Idea:
-SavingsAccount IS-A BankAccount
-CurrentAccount IS-A BankAccount
-
-Each object maintains its own independent balance.
-A single person may own multiple accounts (e.g., one savings account and one current account),
-which would be represented as separate objects in the program.
-
-Purpose of this implementation:
-- Practice OOP concepts
-- Understand inheritance and code reuse
-- Build a structure that can later extend to polymorphism and full banking systems
-*/
-
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -49,58 +7,41 @@ class BankAccount {
     std::string accountHolderName;
     char* accountType;
 
-    protected:
+protected:
     float balance;
 
-    public:
+public:
 
-    BankAccount (int accNo, std::string accName, float bal, const char* accType) : accountNumber(accNo), accountHolderName(accName), balance (bal) {
+    BankAccount(int accNo, std::string accName, float bal, const char* accType)
+        : accountNumber(accNo), accountHolderName(accName), balance(bal) {
         accountType = new char[strlen(accType) + 1];
         strcpy(accountType, accType);
     }
 
-    // Copy constructor for base class
-    BankAccount(const BankAccount& other) : accountNumber(other.accountNumber), accountHolderName(other.accountHolderName), balance(other.balance) {
+    BankAccount(const BankAccount& other)
+        : accountNumber(other.accountNumber),
+          accountHolderName(other.accountHolderName),
+          balance(other.balance) {
         accountType = new char[strlen(other.accountType) + 1];
         strcpy(accountType, other.accountType);
     }
 
-    // Move constructor
-    BankAccount(BankAccount&& other) noexcept : accountNumber(other.accountNumber), 
-                                       accountHolderName(std::move(other.accountHolderName)),
-                                       accountType(other.accountType),
-                                       balance(other.balance)  {
-            other.accountType = nullptr;
-    }
-
-    // move assignment operator
-    BankAccount& operator=(BankAccount&& other) noexcept
-    {
-        if(this == &other)
-            return *this;
-
-        delete[] accountType;
-
-        accountNumber = other.accountNumber;
-        accountHolderName = std::move(other.accountHolderName);
-        balance = other.balance;
-
-        accountType = other.accountType;
+    BankAccount(BankAccount&& other) noexcept
+        : accountNumber(other.accountNumber),
+          accountHolderName(std::move(other.accountHolderName)),
+          accountType(other.accountType),
+          balance(other.balance) {
         other.accountType = nullptr;
-
-        return *this;
     }
 
-    // copy assignment operator 
-    BankAccount& operator=(const BankAccount &other) {
-        if(this == &other) { //this is a pointer and & gives address of other and check it with 
+    BankAccount& operator=(const BankAccount& other) {
+        if (this == &other) {
             return *this;
         }
 
         accountNumber = other.accountNumber;
         accountHolderName = other.accountHolderName;
 
-        //now delete the current object heap memory before allocation new memeory
         delete[] accountType;
 
         accountType = new char[strlen(other.accountType) + 1];
@@ -117,25 +58,16 @@ class BankAccount {
         this->balance += money;
     }
 
-    // virtual void withdraw(float money) {
-    //     if(this->balance < money) {
-    //         std::cout<< "Insufficient balance\n";
-    //         return;
-    //     }
-
-    //     this->balance -= money;
-    // }
-
     virtual void withdraw(float amount) = 0;
 
     virtual void showAccountDetails() const {
-        std::cout<<"Account Number: " << accountNumber << "\n";
-        std::cout<<"Account Holder Name: " << accountHolderName << "\n";
-        if(accountType)
-        std::cout << "Account Type: " << accountType << "\n";
+        std::cout << "Account Number: " << accountNumber << "\n";
+        std::cout << "Account Holder Name: " << accountHolderName << "\n";
+        if (accountType)
+            std::cout << "Account Type: " << accountType << "\n";
         else
-        std::cout << "Account Type: null\n";
-        std::cout<<"Balance: " << balance << "\n";
+            std::cout << "Account Type: null\n";
+        std::cout << "Balance: " << balance << "\n";
     }
 
     virtual ~BankAccount() {
@@ -147,18 +79,13 @@ class BankAccount {
 class SavingsAccount : public BankAccount {
     float interestRate;
 
-    public:
-    SavingsAccount(int accNo, std::string accName, float bal, float rate) : BankAccount(accNo, accName, bal, "Savings"), interestRate(rate) {}
+public:
+    SavingsAccount(int accNo, std::string accName, float bal, float rate)
+        : BankAccount(accNo, accName, bal, "Savings"), interestRate(rate) {}
 
-    // //Copy constructor
-    // SavingsAccount(const SavingsAccount& other) : BankAccount(other), // copy base class part
-    // interestRate(other.interestRate) { std::cout<<"faff"<<std::endl;} //by default this is generated by complier there is not dynamic allocated variables
-
-    //move constructor
     SavingsAccount(SavingsAccount&& other) noexcept
-    : BankAccount(std::move(other)),
-      interestRate(other.interestRate) {}
-
+        : BankAccount(std::move(other)),
+          interestRate(other.interestRate) {}
 
     void setInterestRate(float rate) {
         interestRate = rate;
@@ -166,36 +93,34 @@ class SavingsAccount : public BankAccount {
 
     void showAccountDetails() const override {
         BankAccount::showAccountDetails();
-        std::cout<<"Interest Rate: "<< interestRate << "\n";
+        std::cout << "Interest Rate: " << interestRate << "\n";
     }
 
     void withdraw(float amount) override {
-        if(amount <= balance)
-        balance -= amount;
-        else 
-        std::cout<<"Insufficient balance";
+        if (amount <= balance)
+            balance -= amount;
+        else
+            std::cout << "Insufficient balance";
     }
 
-    virtual ~SavingsAccount() {std::cout<<"delete savings";}
+    virtual ~SavingsAccount() {
+        std::cout << "delete savings";
+    }
 };
 
 class CurrentAccount : public BankAccount {
     float overdraftLimit;
 
-    public:
-    CurrentAccount(int accNo, std::string accName, float bal, float limit) : BankAccount(accNo, accName, bal, "Current"), overdraftLimit(limit) {}
+public:
+    CurrentAccount(int accNo, std::string accName, float bal, float limit)
+        : BankAccount(accNo, accName, bal, "Current"), overdraftLimit(limit) {}
 
-    // Copy constructor
-    // CurrentAccount(const CurrentAccount& other) : BankAccount(other),   // copy base class part
-    //       overdraftLimit(other.overdraftLimit) {} by default this is generated by complier there is not dynamic allocated variables
-
-    //move constructor
     CurrentAccount(CurrentAccount&& other) noexcept
-    : BankAccount(std::move(other)),
-      overdraftLimit(other.overdraftLimit) {}
+        : BankAccount(std::move(other)),
+          overdraftLimit(other.overdraftLimit) {}
 
     void withdraw(float amount) override {
-        if(displayBalance() - amount >= -overdraftLimit) {
+        if (displayBalance() - amount >= -overdraftLimit) {
             balance -= amount;
         } else {
             std::cout << "Overdraft limit exceeded\n";
@@ -204,14 +129,16 @@ class CurrentAccount : public BankAccount {
 
     void showAccountDetails() const override {
         BankAccount::showAccountDetails();
-        std::cout<<"Overdraft Limit: "<< overdraftLimit << "\n";
+        std::cout << "Overdraft Limit: " << overdraftLimit << "\n";
     }
 
-    virtual ~CurrentAccount() {std::cout<<"delete current";}
+    virtual ~CurrentAccount() {
+        std::cout << "delete current";
+    }
 };
 
 int main() {
-    // SavingsAccount s1(101, "Easwar", 5000, 4.5);
+// SavingsAccount s1(101, "Easwar", 5000, 4.5);
     // CurrentAccount c1(201, "Easwar", 3000, 2000);
 
     // s1.deposit(1000);
@@ -244,289 +171,3 @@ int main() {
     //s2 = std::move(s1);
     s2.showAccountDetails();
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// class A
-// {
-// public: int x;
-// protected: int y;
-// private: int z;
-// };
-// class B : public A
-
-// the visibility stays:
-
-// Base member	In Derived
-// public	public
-// protected	protected
-// private	❌ inaccessible
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//make a member function const if the function doesnt make any modification of the member variables, and its shouldnt use non const function 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// A virtual function in a base class can be overridden in a derived class.
-// The 'override' keyword is optional but recommended.
-// It tells the compiler that this function is intended to override a base class virtual function.
-// If 'override' is used and no matching virtual function exists in the base class, the compiler will give an error.
-
-
-// If a class has at least one pure virtual function (=0),
-// it becomes an abstract class and objects of it cannot be created.
-// A derived class must implement all pure virtual functions.
-//Even though objects cannot be created, pointers and references are allowed. BankAccount* acc; [but not new BankAccount() X ]
-
-//If a class has any virtual functions, the destructor should almost always be virtual.
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// The Problem Without a Virtual Destructor
-
-// Now look at your polymorphic code idea:
-
-// BankAccount* acc = new CurrentAccount(...);
-
-// The pointer type is:
-
-// BankAccount*
-
-// But the actual object is:
-
-// CurrentAccount
-
-// Now imagine you delete the object:
-
-// delete acc;
-
-// What happens?
-
-// Without a virtual destructor, C++ only looks at the pointer type.
-
-// So it runs:
-
-// BankAccount destructor
-
-// and skips the CurrentAccount destructor.
-
-// That means part of the object never gets destroyed.
-
-// Why this is dangerous
-
-// If CurrentAccount had resources like:
-
-// dynamically allocated memory
-
-// file handles
-
-// network connections
-
-// mutex locks
-
-// those resources would never be released.
-
-// This creates memory leaks or resource leaks.
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// With a Virtual Destructor
-
-// If the base class destructor is virtual:
-
-// virtual ~BankAccount()
-
-// C++ will check the actual object type at runtime.
-
-// So when this runs:
-
-// delete acc;
-
-// the system calls:
-
-// CurrentAccount destructor
-// BankAccount destructor
-
-// in correct order.
-
-// Everything gets cleaned properly.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//if the class has virtual function then its destructor should be virtual, it childs destructor will be virtual too.
-//If the base class destructor is virtual, then all destructors in the inheritance hierarchy become virtual automatically.
-//Imagine this hierarchy:
-
-// BankAccount
-//    ↑
-// SavingsAccount
-//    ↑
-// PremiumSavingsAccount
-
-// Now suppose:
-
-// SavingsAccount* acc = new PremiumSavingsAccount();
-
-// Then you delete:
-
-// delete acc;
-
-// The compiler already knows the pointer type is:
-
-// SavingsAccount*
-
-// So it calls:
-
-// PremiumSavingsAccount destructor
-// SavingsAccount destructor
-// BankAccount destructor
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//its comes to the point what the compliers know about the type knows the exact object type.
-
-// When virtual destructor becomes necessary
-
-// The problem appears only when you delete through a base pointer.
-
-// Example situation:
-
-// BankAccount* acc = new SavingsAccount(...);
-// delete acc;
-// Now the compiler only sees:
-
-// BankAccount*
-
-// If the destructor is not virtual, C++ destroys only:
-
-// BankAccount destructor
-
-// and skips the SavingsAccount destructor.
-
-// That is the bug.
-
-// Case 1 — Direct object
-// SavingsAccount s;
-
-// Destructor order:
-
-// SavingsAccount
-// BankAccount
-
-// Works even without virtual destructor.
-
-// Case 2 — Base pointer
-// BankAccount* acc = new SavingsAccount();
-// delete acc;
-
-// Without virtual destructor:
-
-// BankAccount destructor only ❌
-
-// With virtual destructor:
-
-// SavingsAccount
-// BankAccount ✔
-
-///If a class has virtual functions → make the destructor virtual.
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//copy constructor
-//deep vs shallow copy
-//when to use deep copy, what does
-//The compiler does a member-wise copy. This works fine for simple data types (int, float, char). However, if your class contains pointers or handles to resources (like a file or a heap-allocated array), both objects will end up pointing to the same memory address.
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//When a function receives a string literal, the parameter should almost always be:
-//const char*
-//because the literal must not be modified.
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// If a class manages heap memory or other resources, it must define:
-
-// destructor
-
-// copy constructor
-
-// copy assignment operator
-
-// That is the Rule of Three.
-
-// char* accountType
-
-// exists only in BankAccount, so the resource ownership is handled there.
-
-// What happens in derived classes
-
-// Your derived classes contain only:
-
-// float interestRate
-// float overdraftLimit
-
-// These are simple values.
-
-// For such data, the compiler-generated assignment operator is perfectly safe.
-
-// So the compiler automatically generates something equivalent to:
-
-// SavingsAccount& operator=(const SavingsAccount& other)
-// {
-//     BankAccount::operator=(other);
-//     interestRate = other.interestRate;
-//     return *this;
-// }
-
-// You don't need to write it manually.
-//summary
-// Simple rule to remember
-// If a class owns resources → implement Rule of Three
-// Derived classes without resources → compiler-generated operator is fine
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Rule of Five
-
-// If a class manages resources, it may need:
-
-// Destructor
-// Copy Constructor
-// Copy Assignment
-// Move Constructor
-// Move Assignment
-
-// Why move semantics exist
-
-// Right now when you copy an object:
-
-// SavingsAccount s2 = s1;
-
-// C++:
-
-// 1️⃣ allocates new memory
-// 2️⃣ copies the string
-// 3️⃣ duplicates everything
-
-// But sometimes copying is wasteful.
-// Move semantics allows:
-
-// transfer ownership instead of copying
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// The important C++ rule
-
-// C++ generates move constructors only if none of these exist:
-
-// copy constructor
-// copy assignment operator
-// destructor
-
-// If you define any of them, the compiler assumes:
-
-// You are managing resources manually
-
-// so it stops generating move operations automatically.
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
