@@ -12,12 +12,14 @@ protected:
 
 public:
 
+    //constructor
     BankAccount(int accNo, std::string accName, float bal, const char* accType)
         : accountNumber(accNo), accountHolderName(accName), balance(bal) {
         accountType = new char[strlen(accType) + 1];
         strcpy(accountType, accType);
     }
 
+    //copy constructor
     BankAccount(const BankAccount& other)
         : accountNumber(other.accountNumber),
           accountHolderName(other.accountHolderName),
@@ -26,6 +28,7 @@ public:
         strcpy(accountType, other.accountType);
     }
 
+    //move constructor
     BankAccount(BankAccount&& other) noexcept
         : accountNumber(other.accountNumber),
           accountHolderName(std::move(other.accountHolderName)),
@@ -34,6 +37,7 @@ public:
         other.accountType = nullptr;
     }
 
+    //copy assignment operator
     BankAccount& operator=(const BankAccount& other) {
         if (this == &other) {
             return *this;
@@ -83,6 +87,7 @@ public:
     SavingsAccount(int accNo, std::string accName, float bal, float rate)
         : BankAccount(accNo, accName, bal, "Savings"), interestRate(rate) {}
 
+    //move constructor
     SavingsAccount(SavingsAccount&& other) noexcept
         : BankAccount(std::move(other)),
           interestRate(other.interestRate) {}
@@ -115,6 +120,7 @@ public:
     CurrentAccount(int accNo, std::string accName, float bal, float limit)
         : BankAccount(accNo, accName, bal, "Current"), overdraftLimit(limit) {}
 
+    //move constructor
     CurrentAccount(CurrentAccount&& other) noexcept
         : BankAccount(std::move(other)),
           overdraftLimit(other.overdraftLimit) {}
